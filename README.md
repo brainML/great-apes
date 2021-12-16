@@ -16,3 +16,6 @@ To reproduce the results in the manuscript, you will need to apply for access to
 - Create a free account at https://db.humanconnectome.org.
 - Read and accept the open access data use terms for the "WU-Minn HCP Data - 1200 Subjects" dataset. This will give you access to the fMRI data and most of the demographic and behavioral data. 
 - Read the restricted data use terms and apply for access to this data under the "apply for restricted data" section at https://www.humanconnectome.org/study/hcp-young-adult/document/wu-minn-hcp-consortium-restricted-data-use-terms. This will give you access to the family structure data, which is contained in the "Restricted" csv file.
+- Contact us for access to the list of participants we have selected for the development set. 
+- Use our pre-processing code (code/pre-processing) to pre-process the data. 
+- Use our analysis code (code/analyses) to analyze the data.
