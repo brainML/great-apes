@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 import os
-from pre_processing_utils import get_TRs_with_visual_features, read_json_list, get_voxels_masked_zscored
+from pre_processing_utils import get_TRs_with_visual_features, read_json_list, get_voxels_masked_subset_zscored
 
 # Get TRs to analyze
 input_kwargs ={
@@ -26,16 +26,16 @@ movie_name_4 = "tfMRI_MOVIE4_7T_AP"
 
 for sub_idx, sub in enumerate(train_subjects):
     for file1 in os.listdir("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}".format(SUB = sub, MOVIE = movie_name_1)):
-        zscored_1 = get_voxels_masked_zscored("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}/{FILE}".format(SUB = sub, MOVIE = movie_name_1, FILE = file1), M1_tr_idx)
+        zscored_1 = get_voxels_masked_subset_zscored("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}/{FILE}".format(SUB = sub, MOVIE = movie_name_1, FILE = file1), M1_tr_idx)
         
     for file2 in os.listdir("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}".format(SUB = sub, MOVIE = movie_name_2)):
-        zscored_2 = get_voxels_masked_zscored("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}/{FILE}".format(SUB = sub, MOVIE = movie_name_2, FILE = file2), M2_tr_idx)
+        zscored_2 = get_voxels_masked_subset_zscored("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}/{FILE}".format(SUB = sub, MOVIE = movie_name_2, FILE = file2), M2_tr_idx)
         
     for file3 in os.listdir("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}".format(SUB = sub, MOVIE = movie_name_3)):
-        zscored_3 = get_voxels_masked_zscored("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}/{FILE}".format(SUB = sub, MOVIE = movie_name_3, FILE = file3), M3_tr_idx)
+        zscored_3 = get_voxels_masked_subset_zscored("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}/{FILE}".format(SUB = sub, MOVIE = movie_name_3, FILE = file3), M3_tr_idx)
         
     for file4 in os.listdir("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}".format(SUB = sub, MOVIE = movie_name_4)):
-        zscored_4 = get_voxels_masked_zscored("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}/{FILE}".format(SUB = sub, MOVIE = movie_name_4, FILE = file4), M4_tr_idx)
+        zscored_4 = get_voxels_masked_subset_zscored("../../data/HCP_7T_Movie_Voxel_Space/{SUB}/MNINonLinear/Results/{MOVIE}/{FILE}".format(SUB = sub, MOVIE = movie_name_4, FILE = file4), M4_tr_idx)
         
     # Concatenate movie clips together
     movie_1_2 = np.vstack((zscored_1, zscored_2))
