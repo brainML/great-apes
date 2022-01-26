@@ -9,7 +9,7 @@ def subset_train_test_data_motor_tr_by_roi_data(motor_timing, subject_list, run,
     test_subjects_tr_by_roi = {}
     for sub_idx, sub in enumerate(subject_list):
     
-        f = "../../data/HCP_3T_Task/pre_processed/{subject}_tfMRI_{run_name}_shen268_roi_ts.txt".format(subject = sub,
+        f = "../../data/participant_data/pre_processed_motor/{subject}_tfMRI_{run_name}_shen268_roi_ts.txt".format(subject = sub,
                                                                                             run_name = run)
         if os.path.isfile(f):
             run_data = pd.read_csv(f, sep='\t', header=None).dropna(axis=1)
