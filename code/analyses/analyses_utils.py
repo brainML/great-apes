@@ -67,4 +67,7 @@ def get_matrix_with_average_for_each_voxel_with_leave_one_subject_out(num_TRS, n
             save_dict_greater_than_4gb(avg_tr_voxels_leave_one_sub_out, "../../data/HCP_{TESLA}_{TASK}_Voxel_Space/pre_processed/tr_by_voxel_averaged_with_sub_{SUB}_left_out_{TASK}".format(TESLA = scanner_resolution,
                     TASK = task, SUB=sub))
 
+
+
+
       
