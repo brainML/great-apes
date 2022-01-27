@@ -17,6 +17,6 @@ for s,sub in enumerate(train_subs):
     feature_mat = np.array([subjwise_ts_dict_train_subs[k] for k in subjwise_ts_dict_train_subs if k != sub]).mean(axis = 0)
     correlations, predictions, lambdas = encoding_model_return_predictions(subject_TRs_by_ROI, feature_mat, n_folds = 4, splits = [900, 900 + 900, 900 + 900 + 900, 900 + 900 + 900 + 900]) 
 
-    np.save("../../data/encoding_models/sub_{SUB}_corr_ROI_level_rest.npy".format(SUB=sub), correlations)
-    np.save("../../data/encoding_models/sub_{SUB}_predictions_ROI_level_rest.npy".format(SUB=sub), predictions)
-    np.save("../../data/encoding_models/sub_{SUB}_lambdas_ROI_level_rest.npy".format(SUB=sub), lambdas)
+    np.save("../../data/encoding_models/sub_{SUB}_corr_ROI_level_APE_rest.npy".format(SUB=sub), correlations)
+    np.save("../../data/encoding_models/sub_{SUB}_predictions_ROI_level_APE_rest.npy".format(SUB=sub), predictions)
+    np.save("../../data/encoding_models/sub_{SUB}_lambdas_ROI_level_APE_rest.npy".format(SUB=sub), lambdas)

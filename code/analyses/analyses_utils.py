@@ -67,7 +67,24 @@ def get_matrix_with_average_for_each_voxel_with_leave_one_subject_out(num_TRS, n
             save_dict_greater_than_4gb(avg_tr_voxels_leave_one_sub_out, "../../data/HCP_{TESLA}_{TASK}_Voxel_Space/pre_processed/tr_by_voxel_averaged_with_sub_{SUB}_left_out_{TASK}".format(TESLA = scanner_resolution,
                     TASK = task, SUB=sub))
 
+def get_average_encoding_model_predictive_performance(train_subs, num_brain_regions, brain_region_type, model_type, task): # average is across all participants per brain region
+    sub_by_brain_region = np.zeros((len(train_subs), num_brain_regions))
+    for s,subj in enumerate(train_subs):
+        sub_encoding_model_predictive_performance = np.load("../../data/encoding_models/sub_{SUB}_corr_{REGION}_level_{MODEL}_{TASK}.npy".format(SUB=sub, 
+                                                    REGION = brain_region_type, MODEL = model_type, TASK = task))
+        sub_by_brain_region[s, :] = sub_encoding_model_predictive_performance
+    average_encoding_model_predictive_performance = np.nanmean(sub_by_brain_region, axis = 0)
 
+    return average_encoding_model_predictive_performance
 
+def get_encoding_model_predictive_performance_variability(train_subs, num_brain_regions, brain_region_type, model_type, task): 
+# ^ aka coefficient of variation, variability is across participants per brain region
+    sub_by_brain_region = np.zeros((len(train_subs), num_brain_regions))
+    for s,subj in enumerate(train_subs):
+        sub_encoding_model_predictive_performance = np.load("../../data/encoding_models/sub_{SUB}_corr_{REGION}_level_{MODEL}_{TASK}.npy".format(SUB=sub, 
+                                                    REGION = brain_region_type, MODEL = model_type, TASK = task))
+        sub_by_brain_region[s, :] = sub_encoding_model_predictive_performance
 
-      
+    performance_variability = np.nanstd(sub_by_brain_region, axis = 0) / np.abs(np.nanmean(fsub_by_brain_region, axis = 0))
+
+    return performance_variability
