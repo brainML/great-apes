@@ -15,11 +15,11 @@ args = parser.parse_args()
 model_type = args.model_type
 brain_region_type = args.brain_region_type
 
-def get_brain_activity_to_predict(brain_region):
+def get_brain_activity_to_predict(brain_region, sub):
     if brain_region == "ROI":
         subjwise_ts_dict_all_subs = load_dict("../../data/subjwise_dict_TR_by_ROI_matrix_zscoredPerRunAndThenAcross4Runs_movie")
         # ^ created in pre_processing/D_get_TRs_by_ROIs_to_analyze_movie.py
-        subject_TRs_by_brain_region = subjwise_ts_dict_all_subs[subj]
+        subject_TRs_by_brain_region = subjwise_ts_dict_all_subs[sub]
 
     elif brain_region == "voxel":
         subject_TRs_by_brain_region = np.load("../../data/HCP_7T_Movie_Voxel_Space/pre_processed/sub_{SUB}_zscored_per_run_and_across_4_runs_thin_mask".format(SUB = sub))
@@ -28,12 +28,12 @@ def get_brain_activity_to_predict(brain_region):
     return subject_TRs_by_brain_region
 
 # Get feature space matrix predicting brain activity from
-def get_feature_space_matrix(model, brain_region):
+def get_feature_space_matrix(train_subjects, model, brain_region, sub):
     if model == "APE":
         if brain_region == "ROI":
             subjwise_ts_dict_all_subs = load_dict("../../data/subjwise_dict_TR_by_ROI_matrix_zscoredPerRunAndThenAcross4Runs_movie") # key = subject, value = TR x ROI matrix
             # ^ created in pre_processing/D_get_TRs_by_ROIs_to_analyze_movie.py
-            subjwise_ts_dict_train_subs = {your_key: subjwise_ts_dict_all_subs[your_key] for your_key in train_subs}
+            subjwise_ts_dict_train_subs = {your_key: subjwise_ts_dict_all_subs[your_key] for your_key in train_subjects}
             feature_mat = np.array([subjwise_ts_dict_train_subs[k] for k in subjwise_ts_dict_train_subs if k != sub]).mean(axis = 0)
         elif brain_region == "voxel":
             feature_mat = load_dict("../../data/HCP_7T_Movie_Voxel_Space/pre_processed/tr_by_voxel_averaged_with_sub_{SUB}_left_out_Movie".format(SUB=sub))
@@ -50,8 +50,8 @@ def get_feature_space_matrix(model, brain_region):
 
 train_subs = read_json_list(train_subjects_list) #contact us for access to train_subjects_list (the list of participants we have selected for the development set)
 for s,sub in enumerate(train_subs):
-    brain_activity_to_predict = get_brain_activity_to_predict(brain_region_type)
-    feature_space_matrix = get_feature_space_matrix(model_type, brain_region_type) 
+    brain_activity_to_predict = get_brain_activity_to_predict(brain_region_type, sub)
+    feature_space_matrix = get_feature_space_matrix(train_subs, model_type, brain_region_type, sub) 
     correlations, predictions, lambdas = encoding_model_return_predictions(brain_activity_to_predict, feature_space_matrix, n_folds = 4, splits = [769, 769 + 795, 769 + 795 + 763,769 + 795 + 763 + 778]) 
 
     np.save("../../data/encoding_models/sub_{SUB}_corr_{REGION}_level_{MODEL}_movie.npy".format(SUB=sub, REGION = brain_region_type, MODEL = model_type), correlations)

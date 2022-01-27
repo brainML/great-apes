@@ -6,7 +6,7 @@ import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.linear_model import Ridge, RidgeCV
 import time 
-from scipy.stats import zscore
+import scipy as sp 
 from sklearn.kernel_ridge import KernelRidge
 import pickle as pkl
 import pandas as pd
@@ -55,7 +55,7 @@ def drop_subjects_without_behavior_3T(behavior_data, predictive_performance, beh
         return behav_without_nans, dropped_sub_predictive_performance, sub_to_keep
 
 def corr(X,Y):
-    return np.mean(zscore(X)*zscore(Y),0)
+    return np.mean(sp.stats.zscore(X)*sp.stats.zscore(Y),0)
 
 def kernel_ridge_sklearn(X, Y, lmbda): # jenn added 7/2/21
     clf = KernelRidge(alpha=lmbda)
@@ -127,7 +127,7 @@ def cross_val_ridge(train_features,train_data, n_splits = 10,
     return weights, np.array([lambdas[i] for i in argmin_lambda])
 
 
-def cross_val_ridge_predictions(train_features,train_data, test_features, n_splits = 10, 
+def cross_val_ridge_predictions(train_features, train_data, test_features, n_splits = 10, 
                     lambdas = np.array([10**i for i in range(-6,10)]),
                     method = 'plain',
                     do_plot = False):

@@ -49,7 +49,7 @@ test_lr, train_lr = subset_train_test_data_motor_tr_by_roi_data(motor_lr_timing_
                                                 train_subjects, "MOTOR_LR", zscore = True)
 
 # Save 
-save_dict(train_rl, "../../data/subjwise_dict_TR_by_ROI_matrix_zscored_per_participant_MOTOR_LR_train")
+save_dict(train_rl, "../../data/subjwise_dict_TR_by_ROI_matrix_zscored_per_participant_MOTOR_RL_train")
 save_dict(train_lr, "../../data/subjwise_dict_TR_by_ROI_matrix_zscored_per_participant_MOTOR_LR_train")
 save_dict(test_rl, "../../data/subjwise_dict_TR_by_ROI_matrix_zscored_per_participant_MOTOR_RL_test")
 save_dict(test_lr, "../../data/subjwise_dict_TR_by_ROI_matrix_zscored_per_participant_MOTOR_LR_test")
