@@ -1,7 +1,6 @@
-import os 
-os.chdir("../")
+import sys
+sys.path.append("../") # allows python to look for modules in parent directory
 from individual_differences_utils import save_dict
-os.chdir("pre_processing")
 from pre_processing_utils import read_json_list, make_TR_by_ROI_dict
 import scipy as sp
 import numpy as np

@@ -1,9 +1,9 @@
 from encoding_models import encoding_model_return_predictions
 from analyses_utils import read_json_list
 import numpy as np
-os.chdir("../")
+import sys
+sys.path.append("../") # allows python to look for modules in parent directory
 from individual_differences_utils import load_dict
-os.chdir("analyses")
 
 train_subs = read_json_list(train_subjects_list) #contact us for access to train_subjects_list (the list of participants we have selected for the development set)
 

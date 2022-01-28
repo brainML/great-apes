@@ -1,8 +1,7 @@
 import numpy as np 
-import os 
-os.chdir("../")
+import sys
+sys.path.append("../") # allows python to look for modules in parent directory
 from individual_differences_utils import load_dict
-os.chdir("analyses")
 
 # Get ISC
 def calculate_pairwise_ISC(train_subjects, num_ROIs, subjwise_ts_dict):

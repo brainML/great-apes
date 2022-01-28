@@ -1,8 +1,8 @@
 import numpy as np 
 import os
-os.chdir("../")
+import sys
+sys.path.append("../") # allows python to look for modules in parent directory
 from individual_differences_utils import save_dict_greater_than_4gb, load_dict
-os.chdir("analyses")
 
 def read_json_list(fileName):
     with open(fileName, "r") as fp:

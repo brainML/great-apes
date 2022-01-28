@@ -1,9 +1,9 @@
 from encoding_models import enocoding_model_return_predictions
 from analyses_utils import read_json_list
 import numpy as np
-os.chdir("../")
+import sys
+sys.path.append("../") # allows python to look for modules in parent directory
 from individual_differences_utils import load_dict
-os.chdir("analyses")
 import argparse
 
 arser = argparse.ArgumentParser()
