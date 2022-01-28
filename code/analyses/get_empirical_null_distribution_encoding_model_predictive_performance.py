@@ -29,13 +29,13 @@ train_subs = read_json_list(train_subjects_list) #contact us for access to train
 num_of_brain_regions = np.load("../../data/encoding_models/sub_{SUB}_predictions_{REGION}_level_{MODEL}_{TASK}.npy".format(SUB=train_subs[0], 
 							REGION = brain_region_type, MODEL = model_type, TASK = HCP_task)).shape[1] 
 
-# Get midding subjects and fold splits specific to HCP task analyzing
+# Get missing subjects and fold splits specific to HCP task analyzing
 subjects_missing_data = []
 if HCP_task == "movie":
 	task_splits = [769, 769 + 795, 769 + 795 + 763, 769 + 795 + 763 + 778]
 elif HCP_task == "motor":
 	task_splits = [131, 131+126, 131+126+111, 131+126+111+146]
-	# Get which participants don't have motor fMRI data or a descriptive tab file
+	# Get which participants don't have motor fMRI data 
 	sub_no_rl_motor_data = get_subjects_missing_3t_fmri_data(train_subs, "tfMRI_MOTOR_RL") 
 	sub_no_lr_motor_data = get_subjects_missing_3t_fmri_data(train_subs, "tfMRI_MOTOR_LR") 
 	subjects_missing_data = list(set(sub_no_lr_motor_data + sub_no_rl_motor_data))# in HCP 3T motor data

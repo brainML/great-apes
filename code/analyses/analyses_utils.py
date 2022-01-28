@@ -3,6 +3,7 @@ import os
 import sys
 sys.path.append("../") # allows python to look for modules in parent directory
 from individual_differences_utils import save_dict_greater_than_4gb, load_dict, save_dict
+import statsmodels.stats.multitest as multitest
 
 def read_json_list(fileName):
     with open(fileName, "r") as fp:
@@ -132,7 +133,7 @@ def get_permuted_time_dictionary(task, num_of_folds = 4, num_permutations = 1000
     if os.path.isfile("../../data/shuffled_time_dictionary_{TASK}".format(TASK = task)): # File already exists
         permuted_time_dict = {}
         for fold in np.arange(num_of_folds):
-            permuted_time_dict[fold] = load_dict("../../data/shuffled_time_dictionary_{TASK}_fold_{FOLD}".format(TASK = task, FOLD = fold))
+            permuted_time_dict[fold] = np.load("../../data/permuted_time_dictionaries/{TASK}_fold_{FOLD}.npy".format(TASK = task, FOLD = fold))
 
     else: 
         if task == "movie": 
@@ -156,7 +157,34 @@ def get_permuted_time_dictionary(task, num_of_folds = 4, num_permutations = 1000
             start_of_blocks, end_of_blocks = get_start_and_end_row_index_of_time_blocks(num_of_blocks_in_fold, num_time_points_per_block)
             permuted_time_dict[fold] = get_permuted_order_all_time_points(num_time_points_per_fold[fold], num_permutations, permutated_order_time_blocks, 
                                   start_of_blocks, end_of_blocks)
-            save_dict(permuted_time_dict[fold], "../../data/shuffled_time_dictionary_{TASK}_fold_{FOLD}".format(TASK = task, FOLD = fold))
+            np.save("../../data/permuted_time_dictionaries/{TASK}_fold_{FOLD}".format(TASK = task, FOLD = fold), permuted_time_dict[fold])
 
     return permuted_time_dict
+
+# Test if unpermuted values (i.e., encoding-model performance) are significantly higher than chance. 
+def get_empirical_pvalue_one_sided_permutation_test(unpermuted_values, empirical_null_distribution): 
+    pvals = np.zeros(empirical_null_distribution.shape[1])
+    count_permuted_at_least_as_large = np.zeros(empirical_null_distribution.shape[1])   
+    num_permutations = permuted_values.shape[0]
+    
+    for row in np.arange(num_permutations):
+        comparison = empirical_null_distribution[row, :] >= unpermuted_values
+        null_distribution_at_least_as_large = np.where(comparison == True, 1, 0)
+        count_null_distribution_at_least_as_large += null_distribution_at_least_as_large
+    for brain_region_idx, brain_region_count in enumerate(count_null_distribution_at_least_as_large):
+        if brain_region_count == 0:
+            pval = 1 / num_permutations
+            pvals[brain_region_idx] = pval
+        else: 
+            pval = brain_region_count / num_permutations
+            pvals[brain_region_idx] = pval
+
+    return pvals
+
+def pvalue_multiple_hypothesis_benjamini_hochberg_fdr_correction(pvalues_uncorrected, 
+                                                                alpha_val = 0.05, method_str = "fdr_bh"):
+    _, corrected_pvalue, _, _ = multitest.multipletests(pvalues_uncorrected, alpha = alpha_val, method = method_str)
+    return corrected_pvalue
+
+
 
