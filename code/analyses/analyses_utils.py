@@ -88,3 +88,71 @@ def get_encoding_model_predictive_performance_variability(train_subs, num_brain_
     performance_variability = np.nanstd(sub_by_brain_region, axis = 0) / np.abs(np.nanmean(sub_by_brain_region, axis = 0))
 
     return performance_variability
+
+# For each permutation get permuted order for all of the time blocks in the data.  
+def get_permutated_order_of_time_blocks(num_of_blocks, num_permutations):
+    shuffle_order = np.zeros((np.int(np.ceil(num_of_blocks)), num_permutations))
+    for permutation_num in np.arange(num_permutations):
+        shuffle_order[:, permutation_num] = np.random.choice(np.arange(np.ceil(num_10_tr_blocks)), np.int(np.ceil(num_10_tr_blocks)), replace = False)
+    
+    return shuffle_order
+
+# Get time block start and stop row index. This assumes that each time point is a row. 
+# This is standard for fMRI data where each row = 1 TR (repitition time). 
+def get_start_and_end_row_index_of_time_blocks(num_of_blocks, length_of_time_block):
+    fractional, whole = math.modf(num_of_blocks) 
+
+    start_row_index_of_block = {}
+    end_row_index_of_block = {}
+
+    for block in np.arange(np.int(np.ceil(num_of_blocks))):
+        start_row_index_of_block[block] = block * length_of_time_block
+        if block == np.floor(num_of_blocks):
+            end_row_index_of_block[block] = (block * length_of_time_block) + np.round(fractional * length_of_time_block)  - 1 # as row indexes are 0 indexed, need -1
+        else: 
+            end_row_index_of_block[block] = (block * length_of_time_block) + (length_of_time_block -1)
+    
+    return start_row_index_block, end_row_index_of_block
+
+def get_permuted_order_all_time_points(num_time_points, num_permutations, shuffle_order, start_tr_of_block, end_tr_of_block):
+    permuted_order_all_time_points = np.zeros((num_time_points, num_permutations))
+    for permutation_idx in np.arange(permuted_order.shape[1]): 
+        time_point_count = 0 
+        for idx_in_shuffle_order, block_num in enumerate(shuffle_order[:, permutation_idx]):
+            start_time_point = start_time_point_of_block[block_num]
+            end_time_point = end_time_point_of_block[block_num]
+
+            time_points_in_block = np.arange(start_time_point, end_time_point + 1)
+            shuffle_order_all_time_points[time_point_count : time_point_count + len(time_points_in_block), permutation_idx] = time_points_in_block
+            time_point_count += len(time_points_in_block) # doing this because 1 of the blocks is only 5 TRs 
+    
+    return permuted_order_all_time_points
+
+def get_permuted_time_dictionary(task, num_of_folds = 4, num_permutations = 10000, num_time_points_per_fold = None, num_time_points_per_block = None):
+    if os.path.isfile("../../data/shuffled_time_dictionary_{TASK}".format(TASK = task)): # File already exists
+        permuted_time_dict = load_dict("../../data/shuffled_time_dictionary_{TASK}".format(TASK = task))
+    else: 
+        if task == "movie": 
+            num_time_points_per_fold = [769, 795, 763, 778] 
+            num_time_points_per_block = 20
+        elif task == "motor": 
+            num_time_points_per_fold = [131, 126, 146, 111] 
+            num_time_points_per_block = 28
+        elif task == "rest": 
+            num_time_points_per_fold = [900, 900, 900, 900] 
+            num_time_points_per_block = 20
+        else:
+            if num_time_points_per_fold == None or num_time_points_per_block == None:
+                print("""Task that was specified does not have defaults for num_time_points_per_fold and num_time_points_per_block in function.
+                Need to specify these parameters. """)
+
+        permuted_time_dict = {}
+        for fold in np.arange(num_of_folds):
+            num_of_blocks_in_fold = num_time_points_per_fold[fold] / num_time_points_per_block
+            permutated_order_time_blocks = get_permutated_order_of_time_blocks(num_of_blocks_in_fold, num_permutations)
+            start_of_blocks, end_of_blocks = get_start_and_end_row_index_of_time_blocks(num_of_blocks_in_fold, num_time_points_per_block)
+            permuted_time_dict[fold] = get_permuted_order_all_time_points(num_time_points_per_fold[fold], num_permutations, permutated_order_time_blocks, 
+                                  start_of_blocks, end_of_blocks)
+
+    return permuted_time_dict
+

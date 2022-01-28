@@ -12,7 +12,7 @@ task_name = "Motor"
 
 train_subs = read_json_list(train_subjects_list) #contact us for access to train_subjects_list (the list of participants we have selected for the development set)
 
-# Get timing of motor stimulus subtasks, and which participants don't have motor fMRI data or a descriptive tab file
+# Get which participants don't have motor fMRI data or a descriptive tab file
 sub_no_rl_motor_data = get_subjects_missing_3t_fmri_data(train_subs, "tfMRI_MOTOR_RL") 
 sub_no_lr_motor_data = get_subjects_missing_3t_fmri_data(train_subs, "tfMRI_MOTOR_LR") 
 subjects_missing_data = list(set(sub_no_lr_motor_data + sub_no_rl_motor_data))# in HCP 3T motor data
