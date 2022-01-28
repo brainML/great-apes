@@ -40,7 +40,7 @@ def encoding_model_return_empirical_null_distribution_predictive_performance(pre
 
     # For each permutation get null distribution predictive performace
     null_dist_predictive_performance = {}
-    shuffled_time_dict = dict_load(shuffled_time) 
+    shuffled_time_dict = load_dict(shuffled_time) 
     # ^ dict where key = fold number, value = matrix where rows are number of time points in fold, cols are number of permutations
     for permutation_num in np.arange(num_permutations):
 
@@ -54,10 +54,8 @@ def encoding_model_return_empirical_null_distribution_predictive_performance(pre
             fold_permuted_predictions = fold_predictions[i][fold_permuted_row_index, :]
 
             # Correlate permuted predictions and true data
-            corrs[i, :] = Leila_ridge.corr(fold_permuted_predictions, fold_true_data[i])
+            corrs[i, :] = corr(fold_permuted_predictions, fold_true_data[i])
 
         null_dist_predictive_performance["permutation_{}".format(permutation_num)] = corrs.mean(0)
 
     return null_dist_predictive_performance
-
-
