@@ -2,7 +2,7 @@ import numpy as np
 import os
 import sys
 sys.path.append("../") # allows python to look for modules in parent directory
-from individual_differences_utils import save_dict_greater_than_4gb, load_dict
+from individual_differences_utils import save_dict_greater_than_4gb, load_dict, save_dict
 
 def read_json_list(fileName):
     with open(fileName, "r") as fp:
@@ -130,7 +130,10 @@ def get_permuted_order_all_time_points(num_time_points, num_permutations, shuffl
 
 def get_permuted_time_dictionary(task, num_of_folds = 4, num_permutations = 10000, num_time_points_per_fold = None, num_time_points_per_block = None):
     if os.path.isfile("../../data/shuffled_time_dictionary_{TASK}".format(TASK = task)): # File already exists
-        permuted_time_dict = load_dict("../../data/shuffled_time_dictionary_{TASK}".format(TASK = task))
+        permuted_time_dict = {}
+        for fold in np.arange(num_of_folds):
+            permuted_time_dict[fold] = load_dict("../../data/shuffled_time_dictionary_{TASK}_fold_{FOLD}".format(TASK = task, FOLD = fold))
+
     else: 
         if task == "movie": 
             num_time_points_per_fold = [769, 795, 763, 778] 
@@ -153,6 +156,7 @@ def get_permuted_time_dictionary(task, num_of_folds = 4, num_permutations = 1000
             start_of_blocks, end_of_blocks = get_start_and_end_row_index_of_time_blocks(num_of_blocks_in_fold, num_time_points_per_block)
             permuted_time_dict[fold] = get_permuted_order_all_time_points(num_time_points_per_fold[fold], num_permutations, permutated_order_time_blocks, 
                                   start_of_blocks, end_of_blocks)
+            save_dict(permuted_time_dict[fold], "../../data/shuffled_time_dictionary_{TASK}_fold_{FOLD}".format(TASK = task, FOLD = fold))
 
     return permuted_time_dict
 
