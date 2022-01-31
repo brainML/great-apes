@@ -130,10 +130,12 @@ def get_permuted_order_all_time_points(num_time_points, num_permutations, shuffl
     return permuted_order_all_time_points
 
 def get_permuted_time_dictionary(task, num_of_folds = 4, num_permutations = 10000, num_time_points_per_fold = None, num_time_points_per_block = None):
-    if os.path.isfile("../../data/shuffled_time_dictionary_{TASK}".format(TASK = task)): # File already exists
+    if os.path.isfile("../../data/permuted_time_dictionaries/{TASK}_fold_{FOLD}_num_permutations_{PERMUTATIONS}.npy".format(TASK = task, FOLD = fold, 
+        PERMUTATIONS = num_permutations)): # File already exists. 
         permuted_time_dict = {}
         for fold in np.arange(num_of_folds):
-            permuted_time_dict[fold] = np.load("../../data/permuted_time_dictionaries/{TASK}_fold_{FOLD}.npy".format(TASK = task, FOLD = fold))
+            permuted_time_dict[fold] = np.load("../../data/permuted_time_dictionaries/{TASK}_fold_{FOLD}_num_permutations_{PERMUTATIONS}.npy".format(TASK = task, FOLD = fold, 
+                PERMUTATIONS = num_permutations))
 
     else: 
         if task == "movie": 
@@ -157,7 +159,8 @@ def get_permuted_time_dictionary(task, num_of_folds = 4, num_permutations = 1000
             start_of_blocks, end_of_blocks = get_start_and_end_row_index_of_time_blocks(num_of_blocks_in_fold, num_time_points_per_block)
             permuted_time_dict[fold] = get_permuted_order_all_time_points(num_time_points_per_fold[fold], num_permutations, permutated_order_time_blocks, 
                                   start_of_blocks, end_of_blocks)
-            np.save("../../data/permuted_time_dictionaries/{TASK}_fold_{FOLD}".format(TASK = task, FOLD = fold), permuted_time_dict[fold])
+            np.save("../../data/permuted_time_dictionaries/{TASK}_fold_{FOLD}_num_permutations_{PERMUTATIONS}".format(TASK = task, 
+                    FOLD = fold, PERMUTATIONS = num_permutations), permuted_time_dict[fold])
 
     return permuted_time_dict
 
@@ -186,5 +189,30 @@ def pvalue_multiple_hypothesis_benjamini_hochberg_fdr_correction(pvalues_uncorre
     _, corrected_pvalue, _, _ = multitest.multipletests(pvalues_uncorrected, alpha = alpha_val, method = method_str)
     return corrected_pvalue
 
+# Drop any subjects without encoding model predictive performance, as subjects are only missing this if they don't have the relevant brain data
+def get_updated_train_subs_drop_subjects_without_encoding_model_performance(train_subs, brain_region_type, model_type, HCP_task):
+  task_subs = []
+  subjects_missing_data = []
+  for sub in train_subs:
+    if os.path.isfile("../../data/encoding_models/sub_{SUB}_corr_{REGION}_level_{MODEL}_{TASK}.npy".format(SUB=sub, REGION = brain_region_type,
+      MODEL = model_type, TASK = HCP_task)):
+      task_subs.append(sub)
+    else: 
+        subjects_missing_data.append(sub)
 
+  return task_subs, subjects_missing_data
 
+def get_permuted_subject_order(train_subs, num_permutations = 10000):
+    num_subjects = len(train_subs)
+    if os.path.isfile("../../data/permuted_subjects_{NUM_SUBS}_subjects_{PERMUTATIONS}_permutations.npy".format(NUM_SUBS = num_subjects, 
+                                                                        PERMUTATIONS = num_permutations)): # File already exists. 
+        permuted_subject_order = np.load("../../data/permuted_subjects_{NUM_SUBS}_subjects_{PERMUTATIONS}_permutations.npy".format(NUM_SUBS = num_subjects, 
+                                                                        PERMUTATIONS = num_permutations))        
+    else: 
+        permuted_subject_order = np.zeros((num_subjects, num_permutations))
+        for permutation in np.arange(num_permutations):
+            order = np.random.choice(np.arange(num_subs), num_subs, replace = False)
+            permuted_subject_order[:, permutation] = [train_subs[i] for i in order]
+        np.save("../../data/permuted_subjects_{NUM_SUBS}_subjects_{PERMUTATIONS}_permutations".format(NUM_SUBS = num_subjects, 
+                                                                                    PERMUTATIONS = num_permutations), permuted_subject_order)
+    return permuted_subject_order
