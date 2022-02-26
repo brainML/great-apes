@@ -1,6 +1,7 @@
 import numpy as np 
 import os
 import sys
+import pandas as pd
 sys.path.append("../") # allows python to look for modules in parent directory
 from individual_differences_utils import save_dict_greater_than_4gb, load_dict, save_dict
 import statsmodels.stats.multitest as multitest
@@ -14,8 +15,7 @@ def get_subjects_missing_3t_fmri_data(subject_list, run):
     sub_without_run_data = list()
     for sub_idx, sub in enumerate(subject_list):
         d = "../../data/HCP_3T_Task/{}".format(sub)
-        if os.path.isdir("{dir_name}/MNINonLinear/Results/{run_name}".format(dir_name = d, run_name = run)):
-        else: 
+        if not os.path.isdir("{dir_name}/MNINonLinear/Results/{run_name}".format(dir_name = d, run_name = run)):
             sub_without_run_data.append(sub)
                     
     return sub_without_run_data
@@ -67,28 +67,6 @@ def get_matrix_with_average_for_each_voxel_with_leave_one_subject_out(num_TRS, n
 
             save_dict_greater_than_4gb(avg_tr_voxels_leave_one_sub_out, "../../data/HCP_{TESLA}_{TASK}_Voxel_Space/pre_processed/tr_by_voxel_averaged_with_sub_{SUB}_left_out_{TASK}".format(TESLA = scanner_resolution,
                     TASK = task, SUB=sub))
-
-def get_average_encoding_model_predictive_performance(train_subs, num_brain_regions, brain_region_type, model_type, task): # average is across all participants per brain region
-    sub_by_brain_region = np.zeros((len(train_subs), num_brain_regions))
-    for s,sub in enumerate(train_subs):
-        sub_encoding_model_predictive_performance = np.load("../../data/encoding_models/sub_{SUB}_corr_{REGION}_level_{MODEL}_{TASK}.npy".format(SUB=sub, 
-                                                    REGION = brain_region_type, MODEL = model_type, TASK = task))
-        sub_by_brain_region[s, :] = sub_encoding_model_predictive_performance
-    average_encoding_model_predictive_performance = np.nanmean(sub_by_brain_region, axis = 0)
-
-    return average_encoding_model_predictive_performance
-
-def get_encoding_model_predictive_performance_variability(train_subs, num_brain_regions, brain_region_type, model_type, task): 
-# ^ aka coefficient of variation, variability is across participants per brain region
-    sub_by_brain_region = np.zeros((len(train_subs), num_brain_regions))
-    for s,sub in enumerate(train_subs):
-        sub_encoding_model_predictive_performance = np.load("../../data/encoding_models/sub_{SUB}_corr_{REGION}_level_{MODEL}_{TASK}.npy".format(SUB=sub, 
-                                                    REGION = brain_region_type, MODEL = model_type, TASK = task))
-        sub_by_brain_region[s, :] = sub_encoding_model_predictive_performance
-
-    performance_variability = np.nanstd(sub_by_brain_region, axis = 0) / np.abs(np.nanmean(sub_by_brain_region, axis = 0))
-
-    return performance_variability
 
 # For each permutation get permuted order for all of the time blocks in the data.  
 def get_permutated_order_of_time_blocks(num_of_blocks, num_permutations):
@@ -191,13 +169,13 @@ def pvalue_multiple_hypothesis_benjamini_hochberg_fdr_correction(pvalues_uncorre
 
 # Drop any subjects without encoding model predictive performance, as subjects are only missing this if they don't have the relevant brain data
 def get_updated_train_subs_drop_subjects_without_encoding_model_performance(train_subs, brain_region_type, model_type, HCP_task):
-  task_subs = []
-  subjects_missing_data = []
-  for sub in train_subs:
-    if os.path.isfile("../../data/encoding_models/sub_{SUB}_corr_{REGION}_level_{MODEL}_{TASK}.npy".format(SUB=sub, REGION = brain_region_type,
-      MODEL = model_type, TASK = HCP_task)):
-      task_subs.append(sub)
-    else: 
+    task_subs = []
+    subjects_missing_data = []
+    for sub in train_subs:
+        if os.path.isfile("../../data/encoding_models/sub_{SUB}_corr_{REGION}_level_{MODEL}_{TASK}.npy".format(SUB=sub, REGION = brain_region_type,
+        MODEL = model_type, TASK = HCP_task)):
+            task_subs.append(sub)
+        else: 
         subjects_missing_data.append(sub)
 
   return task_subs, subjects_missing_data
@@ -216,3 +194,35 @@ def get_permuted_subject_order(train_subs, num_permutations = 10000):
         np.save("../../data/permuted_subjects_{NUM_SUBS}_subjects_{PERMUTATIONS}_permutations".format(NUM_SUBS = num_subjects, 
                                                                                     PERMUTATIONS = num_permutations), permuted_subject_order)
     return permuted_subject_order
+
+def get_behavior_data_for_selected_subjects(selected_subjects):
+    behav_data = pd.read_csv('../../data/all_behav.csv',
+                                 dtype={'Subject': 'str'}) # Downloaded from HCP
+    behav_data.set_index("Subject", inplace=True)
+    behav_data_selected_subjects = behav_data.loc[selected_subjects]
+
+    return behav_data_selected_subjects
+
+
+# Drop subjects without behavior measure of interest from behavior data, predictive performance and family labels. 
+# to do need to update everywhere else this is used
+def get_subset_data_for_subjects_with_behavior_measures(behavior_measure, behavior_data, predictive_performance_matrix, train_subs, family_labels = None, sub_missing_data = []): 
+# ^ specify family_labels and sub_missing_data unless not using returned variables family_labels_without_dropped_subjects and sub_missing_data
+    # Check if subjects missing behavior measure, appears as nans
+    if np.sum(np.isnan(np.asarray(behavior_data[behavior_measure]))) == 0: # No nan's
+        return behavior_data[behavior_measure], predictive_performance_matrix, family_labels, sub_missing_data
+
+  else: 
+        behavior_data_without_dropped_subjects = behavior_data[behavior_measure].drop(behavior_data.loc[pd.isna(behavior_data[behavior_measure]), :].index)
+        sub_to_drop = []
+        for sub in behavior_data.loc[pd.isna(behavior_data[behavior_measure]), :].index:
+            sub_to_drop.append(train_subs.index(sub)) # Row position of missing subject in data to subset
+            sub_missing_data.append(sub) # Subject number of missing subject
+
+        predictive_performance_matrix_without_dropped_subjects = np.delete(predictive_performance_matrix, sub_to_drop, axis = 0)
+    
+        sub_to_keep = np.delete(behavior_data[behavior_measure].index, sub_to_drop)
+        family_labels_without_dropped_subjects = family_labels.loc[family_labels.index.isin(sub_to_keep)]
+
+        return behavior_data_without_dropped_subjects, predictive_performance_matrix_without_dropped_subjects, family_labels_without_dropped_subjects, sub_missing_data
+       

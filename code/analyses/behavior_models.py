@@ -20,7 +20,7 @@ def get_behavior_model_predictive_performance_for_unpermuted_subjects_and_empiri
     subjects_missing_data = None, num_permutations = 10001):
     num_subs = features.shape[0]
     behavior_scores_to_predict = np.zeros((num_subs, num_permutations))
-    behavior_scores_to_predict[:,0] = behavior_scores 
+    behavior_scores_to_predict[:,0] = behavior_scores.values 
 
     for j in range(1,num_permutations):
         if j%500 ==0:
@@ -32,7 +32,7 @@ def get_behavior_model_predictive_performance_for_unpermuted_subjects_and_empiri
         permute_order = [str(i) for i in permute_order]
         behavior_scores_to_predict[:,j]= behavior_scores.reindex(permute_order).squeeze()
     predictions = get_behavior_model_predictive_performance_leave_one_family_out(behavior_scores_to_predict, features, family_list)
-    predictive_performances = corr(permuted_predictions, behavior_scores_to_predict) 
+    predictive_performances = corr(predictions, behavior_scores_to_predict) 
     
     return predictive_performances
 

@@ -1,5 +1,5 @@
 import numpy as np
-from analyses_utils import read_json_list, subset_voxels_for_batches_of_subjects, average_subset_voxels_with_leave_one_subject_out, get_matrix_with_average_for_each_voxel_with_leave_one_subject_out
+from analyses_utils import read_json_list, subset_voxels_for_batches_of_subjects, average_subset_voxels_with_leave_one_subject_out, get_matrix_with_average_for_each_voxel_with_leave_one_subject_out, get_subjects_missing_3t_fmri_data
 
 # Memory constraints of HPC required subsetting of voxels and participants to eventually obtain feature matrices for APE model
 # Step_size and subject_step_size can be increased if the user's system has more memory. Code can also be simiplified to skip subsetting if memory allows.

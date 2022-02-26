@@ -54,10 +54,16 @@ def drop_subjects_without_behavior_3T(behavior_data, predictive_performance, beh
         sub_to_keep = np.delete(behavior_data.index, sub_to_drop)
         return behav_without_nans, dropped_sub_predictive_performance, sub_to_keep
 
+# Pearson correlation
 def corr(X,Y):
-    return np.mean(sp.stats.zscore(X)*sp.stats.zscore(Y),0)
+    return np.mean(sp.stats.zscore(X)*sp.stats.zscore(Y),0) # will return nan if X or Y is constant
 
-def kernel_ridge_sklearn(X, Y, lmbda): # jenn added 7/2/21
+def R2(Pred,Real):
+    SSres = np.mean((Real-Pred)**2,0)
+    SStot = np.var(Real,0)
+    return np.nan_to_num(1-SSres/SStot)
+    
+def kernel_ridge_sklearn(X, Y, lmbda): 
     clf = KernelRidge(alpha=lmbda)
     clf.fit(X,Y)
     return clf.dual_coef_
@@ -169,7 +175,6 @@ def cross_val_ridge_predictions(train_features, train_data, test_features, n_spl
 
     return predictions, np.array([lambdas[i] for i in argmin_lambda])
 
-
 def get_CV_ind_specificSplits(vectorSplits, n_folds):
     n = vectorSplits[n_folds - 1]
     ind = np.zeros((n))
@@ -185,3 +190,9 @@ def get_CV_ind_specificSplits(vectorSplits, n_folds):
             end = vectorSplits[i]
         ind[start:end] = i 
     return ind
+
+def read_json_list(fileName):
+    with open(fileName, "r") as fp:
+        b = json.load(fp)
+    return b
+

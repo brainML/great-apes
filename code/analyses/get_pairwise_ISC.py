@@ -8,10 +8,10 @@ def calculate_pairwise_ISC(train_subjects, num_ROIs, subjwise_ts_dict):
     ISC = np.zeros((len(train_subjects) * len(train_subjects), num_ROIs)) # (all subject pairs x rois)
 
     for sub_1_idx, sub_1 in enumerate(train_subjects): 
-        tr_roi_sub_1 = subjwise_ts_dict[sub_1]
+        tr_roi_sub_1 = np.nan_to_num(subjwise_ts_dict[sub_1])
 
         for sub_2_idx, sub_2 in enumerate(train_subjects): 
-            tr_roi_sub_2 = subjwise_ts_dict[sub_2]
+            tr_roi_sub_2 = np.nan_to_num(subjwise_ts_dict[sub_2])
 
             # Get pearson corr each roi sub_1 x each roi sub_2 
             pearson_corr_coef_matrix = np.corrcoef(tr_roi_sub_1, tr_roi_sub_2, rowvar= False) # sub_1[1],sub_2[1] (index [1,num_roi + 1]) and sub_2[1],sub_1[1] (index [num_roi + 1,1])
